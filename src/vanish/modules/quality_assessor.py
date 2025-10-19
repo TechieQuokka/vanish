@@ -204,6 +204,13 @@ class QualityAssessor:
         Returns:
             Spectral convergence score
         """
+        # For very long audio, use only first 10 seconds to avoid memory issues
+        max_samples = 441000  # 10 seconds at 44.1kHz
+        if len(reference) > max_samples:
+            logger.info(f"Audio too long for full FFT ({len(reference)} samples), using first 10s")
+            reference = reference[:max_samples]
+            processed = processed[:max_samples]
+
         # Compute STFT
         ref_stft = np.fft.rfft(reference)
         proc_stft = np.fft.rfft(processed)

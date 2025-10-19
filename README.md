@@ -1,109 +1,121 @@
-# Vanish - Audio Noise Removal System
+# Vanish - 오디오 노이즈 제거 시스템
 
 <div align="center">
 
-**AI-powered audio noise removal that preserves clean speech**
+**깨끗한 음성을 보존하는 AI 기반 오디오 노이즈 제거 시스템**
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch 2.1+](https://img.shields.io/badge/pytorch-2.1+-ee4c2c.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://github.com/yourusername/vanish)
 
-[Features](#features) • [Installation](#installation) • [Quick Start](#quick-start) • [Documentation](#documentation) • [Performance](#performance)
+[기능](#기능) • [설치](#설치) • [빠른 시작](#빠른-시작) • [문서](#문서) • [성능](#성능)
 
 </div>
 
-## Overview
+## 🎵 샘플 오디오 다운로드
 
-Vanish removes background noise (TV sounds, ambient noise, traffic, etc.) from audio recordings while preserving clean, natural-sounding speech. Built on state-of-the-art deep learning models and optimized for NVIDIA GPUs.
+처리된 오디오 샘플을 다운로드하여 Vanish의 노이즈 제거 성능을 직접 확인해보세요:
 
-### Architecture
+- 📥 [원본 오디오 (MP3)](result/Shinya%20Aoki%20vs.%20Yoshihiro%20Akiyama%20%20ONE%20Championship%20Full%20Fight%20-%20ONE%20Championship.mp3) - 24.98 MB
+- 📥 [노이즈 제거 완료 (WAV)](result/Shinya%20Aoki%20vs.%20Yoshihiro%20Akiyama%20%20ONE%20Championship%20Full%20Fight%20-%20ONE%20Championship_clean.wav) - 55.09 MB
+
+> **참고**: 처리된 WAV 파일은 무손실 품질로 제공되므로 파일 크기가 더 큽니다.
+
+---
+
+## 개요
+
+Vanish는 오디오 녹음에서 배경 소음(TV 소리, 주변 소음, 교통 소음 등)을 제거하면서 깨끗하고 자연스러운 음성을 보존합니다. 최첨단 딥러닝 모델을 기반으로 하며 NVIDIA GPU에 최적화되어 있습니다.
+
+### 아키텍처
 
 ```
-Input Audio → Preprocessing → Source Separation (Demucs) →
-Voice Enhancement (Resemble-Enhance) → Post-Processing → Clean Speech
+입력 오디오 → 전처리 → 음원 분리 (Demucs) →
+음성 향상 (Resemble-Enhance) → 후처리 → 깨끗한 음성
 ```
 
-### Key Technologies
+### 핵심 기술
 
-- **Demucs v4**: Hybrid Transformer for source separation
-- **Resemble-Enhance**: Diffusion-based speech enhancement
-- **VoiceFixer**: Fallback enhancement model
-- **PyTorch**: GPU-accelerated processing
-- **Optimized for RTX 3060 12GB**
+- **Demucs v4**: 음원 분리를 위한 하이브리드 트랜스포머
+- **Resemble-Enhance**: 확산 모델 기반 음성 향상
+- **VoiceFixer**: 대체 음성 향상 모델
+- **PyTorch**: GPU 가속 처리
+- **RTX 3060 12GB 최적화**
 
-## Features
+## 기능
 
-✅ **Multi-stage Pipeline**
-- Source separation using Demucs v4
-- Voice enhancement with Resemble-Enhance
-- Professional-grade post-processing
+✅ **다단계 파이프라인**
+- Demucs v4를 사용한 음원 분리
+- Resemble-Enhance를 통한 음성 향상
+- 전문가급 후처리
 
-✅ **High Quality Output**
-- SNR improvement: typically 20+ dB
-- PESQ scores: 3.5+ (perceptual quality)
-- STOI scores: 0.9+ (intelligibility)
+✅ **고품질 출력**
+- SNR 개선: 일반적으로 20+ dB
+- PESQ 점수: 3.5+ (지각적 품질)
+- STOI 점수: 0.9+ (명료도)
 
-✅ **GPU Accelerated**
-- 6x faster than CPU processing
-- Optimized for RTX 3060 12GB
-- Automatic memory management
+✅ **GPU 가속**
+- CPU 처리 대비 6배 빠름
+- RTX 3060 12GB 최적화
+- 자동 메모리 관리
 
-✅ **Flexible Configuration**
-- Quality presets (fast/balanced/high)
-- YAML-based configuration
-- Batch processing support
+✅ **유연한 구성**
+- 품질 프리셋 (빠름/균형/고품질)
+- YAML 기반 설정
+- 배치 처리 지원
 
-✅ **Multiple Interfaces**
-- Command-line interface (CLI)
+✅ **다양한 인터페이스**
+- 명령줄 인터페이스 (CLI)
 - Python API
-- Configurable pipeline
+- 구성 가능한 파이프라인
 
-✅ **Format Support**
-- Input: WAV, MP3, FLAC, M4A/AAC
-- Output: WAV (16/24-bit PCM)
-- Automatic format conversion
+✅ **포맷 지원**
+- 입력: WAV, MP3, FLAC, M4A/AAC
+- 출력: WAV (16/24-bit PCM)
+- 자동 포맷 변환
 
-## Installation
+## 설치
 
-### Quick Install (Ubuntu + Python 3.11.9 + RTX 3060)
+### 빠른 설치 (Ubuntu + Python 3.11.9 + RTX 3060)
 
 ```bash
-# 1. Install PyTorch with CUDA 12.1
+# 1. CUDA 12.1과 함께 PyTorch 설치
 pip install torch==2.1.2 torchaudio==2.1.2 --index-url https://download.pytorch.org/whl/cu121
 
-# 2. Install Vanish
+# 2. Vanish 설치
 git clone https://github.com/yourusername/vanish.git
 cd vanish
 pip install -r requirements.txt
 pip install -e .
 
-# 3. Install Resemble-Enhance (optional, recommended)
+# 3. Resemble-Enhance 설치 (선택사항, 권장)
 pip install git+https://github.com/resemble-ai/resemble-enhance.git
 
-# 4. Verify installation
+# 4. 설치 확인
 vanish info
 ```
 
-**See [INSTALL.md](INSTALL.md) for detailed installation instructions**
+**자세한 설치 지침은 [INSTALL.md](INSTALL.md)를 참조하세요**
 
-## Quick Start
+## 빠른 시작
 
-### Command Line Interface
+### 명령줄 인터페이스
 
 ```bash
-# Basic usage
+# 기본 사용법
 vanish input.wav -o output.wav
 
-# High quality mode with verbose output
+# 상세 출력과 함께 고품질 모드
 vanish input.wav -o output.wav --quality high -vv
 
-# Show quality metrics
+# 품질 메트릭 표시
 vanish input.wav -o output.wav --metrics
 
-# Batch processing
+# 배치 처리
 vanish batch ./inputs ./outputs --pattern "*.wav"
 
-# Use custom configuration
+# 사용자 정의 설정 사용
 vanish input.wav -o output.wav --config config.yaml
 ```
 
@@ -112,271 +124,272 @@ vanish input.wav -o output.wav --config config.yaml
 ```python
 from vanish import AudioPipeline
 
-# Initialize pipeline
+# 파이프라인 초기화
 pipeline = AudioPipeline()
 
-# Process audio file
+# 오디오 파일 처리
 result = pipeline.process('input.wav', 'output.wav')
 
-# Access results
-print(f"Output: {result.output_path}")
-print(f"Processing time: {result.processing_time:.2f}s")
+# 결과 확인
+print(f"출력: {result.output_path}")
+print(f"처리 시간: {result.processing_time:.2f}초")
 print(f"SNR: {result.metrics.snr:.2f} dB")
 print(f"PESQ: {result.metrics.pesq:.2f}")
 print(f"STOI: {result.metrics.stoi:.3f}")
 ```
 
-### Custom Configuration
+### 사용자 정의 설정
 
 ```python
 from vanish import AudioPipeline, PipelineConfig
 
-# Load configuration from YAML
+# YAML에서 설정 로드
 config = PipelineConfig.from_yaml('config.yaml')
 
-# Or create custom configuration
+# 또는 사용자 정의 설정 생성
 config = PipelineConfig(
     device='cuda',
     enhancement_mode='resemble',
     save_intermediate=True
 )
 
-# High quality settings
+# 고품질 설정
 config.demucs.shifts = 2
 config.resemble.denoiser_run_steps = 50
 
-# Initialize and process
+# 초기화 및 처리
 pipeline = AudioPipeline(config)
 result = pipeline.process('input.wav', 'output.wav')
 ```
 
-## Performance
+## 성능
 
-### RTX 3060 12GB (1-minute audio)
+### RTX 3060 12GB (1분 오디오)
 
-| Quality Mode | Processing Time | GPU Memory | Quality (SNR) |
-|-------------|-----------------|------------|---------------|
-| **Fast**     | 15-20 seconds  | ~4-5 GB    | 18-22 dB     |
-| **Balanced** | 20-30 seconds  | ~6-7 GB    | 22-26 dB     |
-| **High**     | 40-60 seconds  | ~7-8 GB    | 26-30 dB     |
+| 품질 모드 | 처리 시간 | GPU 메모리 | 품질 (SNR) |
+|----------|----------|-----------|-----------|
+| **빠름** | 15-20초 | ~4-5 GB | 18-22 dB |
+| **균형** | 20-30초 | ~6-7 GB | 22-26 dB |
+| **고품질** | 40-60초 | ~7-8 GB | 26-30 dB |
 
-### CPU vs GPU Comparison (1-minute audio)
+### CPU vs GPU 비교 (1분 오디오)
 
-| Platform        | Time       | Speedup |
-|-----------------|------------|---------|
-| CPU (8-core)    | 2-3 min    | 1x      |
-| RTX 3060 12GB   | 20-30 sec  | **6x**  |
-| RTX 4090 24GB   | 10-15 sec  | **12x** |
+| 플랫폼 | 시간 | 속도 향상 |
+|--------|------|----------|
+| CPU (8코어) | 2-3분 | 1배 |
+| RTX 3060 12GB | 20-30초 | **6배** |
+| RTX 4090 24GB | 10-15초 | **12배** |
 
-**See [docs/PERFORMANCE.md](docs/PERFORMANCE.md) for optimization tips**
+**최적화 팁은 [docs/PERFORMANCE.md](docs/PERFORMANCE.md)를 참조하세요**
 
-## Documentation
+## 문서
 
-### Quick Links
-- 📚 [Quick Start Guide](docs/QUICKSTART.md) - Get started in 5 minutes
-- 🏗️ [Architecture](docs/ARCHITECTURE.md) - System design and components
-- ⚡ [Performance Guide](docs/PERFORMANCE.md) - Optimization tips for RTX 3060
-- 💻 [Installation](INSTALL.md) - Detailed setup instructions
-- 📊 [Project Summary](docs/PROJECT_SUMMARY.md) - Complete overview
+### 빠른 링크
+- 📚 [빠른 시작 가이드](docs/QUICKSTART.md) - 5분 안에 시작하기
+- 🏗️ [아키텍처](docs/ARCHITECTURE.md) - 시스템 설계 및 구성요소
+- ⚡ [성능 가이드](docs/PERFORMANCE.md) - RTX 3060 최적화 팁
+- 💻 [설치](INSTALL.md) - 상세 설정 지침
+- 📊 [프로젝트 요약](docs/PROJECT_SUMMARY.md) - 전체 개요
 
-### Examples
-- [Python API Examples](examples/basic_usage.py)
-- [CLI Examples](examples/cli_examples.sh)
-- [Configuration Examples](config.yaml)
+### 예제
+- [Python API 예제](examples/basic_usage.py)
+- [CLI 예제](examples/cli_examples.sh)
+- [설정 예제](config.yaml)
 
-## Configuration
+## 설정
 
-### Generate Configuration File
+### 설정 파일 생성
 
 ```bash
-# Generate default configuration
+# 기본 설정 생성
 vanish create-config config.yaml --preset rtx3060
 ```
 
-### Configuration Options
+### 설정 옵션
 
 ```yaml
-# Device and quality settings
+# 장치 및 품질 설정
 device: cuda
 quality_mode: balanced  # fast, balanced, high
 
-# Source separation (Demucs)
+# 음원 분리 (Demucs)
 demucs:
   model: htdemucs
-  shifts: 1  # 0=fast, 1=balanced, 2=high quality
-  segment: 10  # seconds
+  shifts: 1  # 0=빠름, 1=균형, 2=고품질
+  segment: 10  # 초
 
-# Voice enhancement (Resemble-Enhance)
+# 음성 향상 (Resemble-Enhance)
 resemble:
-  denoiser_run_steps: 30  # 15=fast, 30=balanced, 50=high
+  denoiser_run_steps: 30  # 15=빠름, 30=균형, 50=고품질
   enhance_run_steps: 30
 
-# Post-processing
+# 후처리
 postprocess:
   noise_gate_threshold: -40  # dB
-  target_lufs: -16  # loudness
+  target_lufs: -16  # 라우드니스
   highpass_cutoff: 80  # Hz
   apply_deessing: true
 ```
 
-## System Requirements
+## 시스템 요구사항
 
-### Minimum
+### 최소
 - Python 3.9+
 - 8GB RAM
-- 6GB GPU VRAM (or CPU)
-- 2GB storage
+- 6GB GPU VRAM (또는 CPU)
+- 2GB 저장공간
 
-### Recommended (Current Implementation)
+### 권장 (현재 구현)
 - Python 3.11.9
-- Ubuntu (WSL2 compatible)
+- Ubuntu (WSL2 호환)
 - NVIDIA RTX 3060 12GB
 - 16GB RAM
-- 5GB storage
+- 5GB 저장공간
 - CUDA 12.1
 
-### Production
+### 프로덕션
 - Python 3.11+
 - NVIDIA RTX 4090 / A100
 - 32GB RAM
 - 10GB NVMe SSD
 - CUDA 12.1+
 
-## Development
+## 개발
 
-### Setup Development Environment
+### 개발 환경 설정
 
 ```bash
-# Install with development dependencies
+# 개발 의존성과 함께 설치
 make dev-install
 
-# Run tests
+# 테스트 실행
 make test
 
-# Format code
+# 코드 포맷팅
 make format
 
-# Run linting
+# 린팅 실행
 make lint
 
-# Run all checks
+# 모든 검사 실행
 make check
 ```
 
-### Project Structure
+### 프로젝트 구조
 
 ```
 vanish/
-├── src/vanish/          # Main package
-│   ├── modules/         # Processing modules
-│   ├── config.py        # Configuration
-│   ├── pipeline.py      # Pipeline orchestration
-│   └── cli.py           # Command-line interface
-├── tests/               # Test suite
-├── examples/            # Usage examples
-├── docs/                # Documentation
-└── config.yaml          # Default configuration
+├── src/vanish/          # 메인 패키지
+│   ├── modules/         # 처리 모듈
+│   ├── config.py        # 설정
+│   ├── pipeline.py      # 파이프라인 오케스트레이션
+│   └── cli.py           # 명령줄 인터페이스
+├── tests/               # 테스트 스위트
+├── examples/            # 사용 예제
+├── docs/                # 문서
+└── config.yaml          # 기본 설정
 ```
 
-## Troubleshooting
+## 문제 해결
 
-### CUDA Out of Memory
+### CUDA 메모리 부족
 
 ```yaml
-# Reduce memory usage in config.yaml
+# config.yaml에서 메모리 사용량 줄이기
 demucs:
-  segment: 5  # Down from 10
+  segment: 5  # 10에서 감소
 
 resemble:
-  chunk_size: 220500  # Down from 441000
+  chunk_size: 220500  # 441000에서 감소
 ```
 
-### Slow Processing
+### 느린 처리
 
 ```bash
-# Verify GPU usage
+# GPU 사용 확인
 vanish info
 
-# Use fast mode
+# 빠른 모드 사용
 vanish input.wav -o output.wav --quality fast
 ```
 
-### Installation Issues
+### 설치 문제
 
-See [INSTALL.md](INSTALL.md) for detailed troubleshooting
+자세한 문제 해결은 [INSTALL.md](INSTALL.md)를 참조하세요
 
-## Contributing
+## 기여
 
-Contributions are welcome! Please:
+기여를 환영합니다! 다음 단계를 따라주세요:
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. 저장소 포크
+2. 기능 브랜치 생성 (`git checkout -b feature/amazing-feature`)
+3. 변경사항 커밋 (`git commit -m 'Add amazing feature'`)
+4. 브랜치에 푸시 (`git push origin feature/amazing-feature`)
+5. Pull Request 생성
 
-## License
+## 라이선스
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+이 프로젝트는 MIT 라이선스 하에 있습니다 - 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
 
-## Acknowledgments
+## 감사의 글
 
-### Models and Libraries
+### 모델 및 라이브러리
 - [Demucs](https://github.com/facebookresearch/demucs) by Facebook Research
 - [Resemble-Enhance](https://github.com/resemble-ai/resemble-enhance) by Resemble AI
 - [VoiceFixer](https://github.com/haoheliu/voicefixer) by Hao Heliu
-- PyTorch, Librosa, and other open-source libraries
+- PyTorch, Librosa 및 기타 오픈소스 라이브러리
 
-### Research Papers
+### 연구 논문
 - Hybrid Transformers for Music Source Separation (Demucs v4)
 - Speech Enhancement with Diffusion Models (Resemble-Enhance)
 - VoiceFixer: Speech Restoration with Generative Models
 
-## Citation
+## 인용
 
-If you use Vanish in your research or projects:
+연구나 프로젝트에서 Vanish를 사용하는 경우:
 
 ```bibtex
 @software{vanish2024,
   title={Vanish: Audio Noise Removal System},
   author={Vanish Team},
   year={2024},
+  version={1.0.0},
   url={https://github.com/yourusername/vanish}
 }
 ```
 
-## Support
+## 지원
 
-- 📖 [Documentation](docs/)
-- 💡 [Examples](examples/)
-- 🐛 [Issues](https://github.com/yourusername/vanish/issues)
-- 💬 [Discussions](https://github.com/yourusername/vanish/discussions)
+- 📖 [문서](docs/)
+- 💡 [예제](examples/)
+- 🐛 [이슈](https://github.com/yourusername/vanish/issues)
+- 💬 [토론](https://github.com/yourusername/vanish/discussions)
 
-## Roadmap
+## 로드맵
 
-### v1.1 (Short-term)
-- [ ] Real-time processing
-- [ ] Web interface (Gradio)
-- [ ] Additional quality presets
-- [ ] Improved error handling
+### v1.1 (단기)
+- [ ] 실시간 처리
+- [ ] 웹 인터페이스 (Gradio)
+- [ ] 추가 품질 프리셋
+- [ ] 개선된 오류 처리
 
-### v2.0 (Medium-term)
-- [ ] Speaker diarization
-- [ ] Language detection
-- [ ] Cloud deployment
-- [ ] Mobile SDK
+### v2.0 (중기)
+- [ ] 화자 분리
+- [ ] 언어 감지
+- [ ] 클라우드 배포
+- [ ] 모바일 SDK
 
-### v3.0 (Long-term)
-- [ ] Custom model training
-- [ ] Video support
-- [ ] AI-powered restoration
+### v3.0 (장기)
+- [ ] 사용자 정의 모델 학습
+- [ ] 비디오 지원
+- [ ] AI 기반 복원
 
 ---
 
 <div align="center">
 
-**Made with ❤️ using PyTorch and state-of-the-art AI models**
+**PyTorch와 최첨단 AI 모델로 만들어졌습니다 ❤️**
 
-[⬆ Back to Top](#vanish---audio-noise-removal-system)
+[⬆ 맨 위로](#vanish---오디오-노이즈-제거-시스템)
 
 </div>

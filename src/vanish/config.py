@@ -16,7 +16,6 @@ class DemucsConfig:
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
     shifts: int = 1  # inference augmentation
     overlap: float = 0.25  # overlap between chunks
-    segment: int = 10  # segment length in seconds
 
     # RTX 3060 12GB optimization
     batch_size: int = 1

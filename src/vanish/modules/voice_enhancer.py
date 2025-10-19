@@ -52,25 +52,9 @@ class VoiceEnhancer:
         try:
             # Note: Resemble-Enhance installation:
             # pip install git+https://github.com/resemble-ai/resemble-enhance.git
-            from resemble_enhance.enhancer import Enhancer  # type: ignore[import-untyped]
-
-            logger.info("Loading Resemble-Enhance model...")
-
-            # Get configuration
-            denoiser_steps = self.config.get('denoiser_run_steps', 30)
-            enhance_steps = self.config.get('enhance_run_steps', 30)
-            solver = self.config.get('solver', 'midpoint')
-            nfe = self.config.get('nfe', 64)
-
-            self.model = Enhancer(
-                device=self.device,
-                denoiser_run_steps=denoiser_steps,
-                enhance_run_steps=enhance_steps,
-                solver=solver,
-                nfe=nfe,
-            )
-
-            logger.info("Resemble-Enhance model loaded successfully")
+            # Resemble-Enhance uses functional API, no model loading needed at init
+            logger.info("Resemble-Enhance API ready")
+            self.model = "resemble"  # Marker that model type is selected
 
         except ImportError:
             logger.error(
@@ -149,42 +133,74 @@ class VoiceEnhancer:
         output_path: Optional[str] = None
     ) -> np.ndarray:
         """Enhance using Resemble-Enhance."""
-        import soundfile as sf  # type: ignore[import-untyped]
-        import tempfile
+        import torch
+        import os
 
-        # Resemble-Enhance works with file paths
-        # Create temporary input file
-        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp_in:
-            sf.write(tmp_in.name, vocals, sr)
-            tmp_in_path = tmp_in.name
-
-        # Create temporary output file if not specified
-        if output_path is None:
-            tmp_out = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
-            output_path = tmp_out.name
-            tmp_out.close()
+        # Set CUDA_HOME to prevent compilation attempts
+        if 'CUDA_HOME' not in os.environ:
+            # Create a mock CUDA_HOME to bypass compilation checks
+            os.environ['CUDA_HOME'] = os.path.expanduser('~/.local/cuda-mock')
+            logger.info(f"Set CUDA_HOME={os.environ['CUDA_HOME']}")
 
         try:
-            # Run enhancement
-            self.model.enhance(
-                input_path=tmp_in_path,
-                output_path=output_path,
+            from resemble_enhance.enhancer.inference import enhance  # type: ignore[import-untyped]
+        except RuntimeError as e:
+            if "CUDA_HOME" in str(e):
+                logger.error(f"Resemble-Enhance CUDA compilation failed: {e}")
+                logger.info("Falling back to CPU processing")
+                self.device = "cpu"
+                from resemble_enhance.enhancer.inference import enhance  # type: ignore[import-untyped]
+            else:
+                raise
+
+        # Get configuration
+        nfe = self.config.get('nfe', 64)
+        solver = self.config.get('solver', 'midpoint')
+
+        logger.info(f"Running Resemble-Enhance with nfe={nfe}, solver={solver}, device={self.device}")
+
+        # Convert to torch tensor
+        dwav_torch = torch.from_numpy(vocals).float()
+
+        # Ensure it's 1D
+        if dwav_torch.ndim > 1:
+            dwav_torch = dwav_torch.squeeze()
+
+        # Run enhancement with error handling
+        try:
+            enhanced_torch, new_sr = enhance(
+                dwav=dwav_torch,
+                sr=sr,
+                device=self.device,
+                nfe=nfe,
+                solver=solver,
+                run_dir=None  # Will auto-download model
             )
+        except RuntimeError as e:
+            if "CUDA" in str(e) or "cuda" in str(e):
+                logger.warning(f"CUDA error during enhancement: {e}")
+                logger.info("Retrying with CPU")
+                self.device = "cpu"
+                enhanced_torch, new_sr = enhance(
+                    dwav=dwav_torch,
+                    sr=sr,
+                    device="cpu",
+                    nfe=nfe,
+                    solver=solver,
+                    run_dir=None
+                )
+            else:
+                raise
 
-            # Load enhanced audio
-            enhanced, _ = sf.read(output_path)
+        # Convert back to numpy
+        enhanced = enhanced_torch.cpu().numpy()
 
-            return enhanced
+        # Save if output_path specified
+        if output_path is not None:
+            import soundfile as sf  # type: ignore[import-untyped]
+            sf.write(output_path, enhanced, new_sr)
 
-        finally:
-            # Cleanup temporary files
-            import os
-            if os.path.exists(tmp_in_path):
-                os.remove(tmp_in_path)
-            if output_path and os.path.exists(output_path):
-                # Only remove if it was temporary
-                if 'tmp' in output_path:
-                    os.remove(output_path)
+        return enhanced
 
     def _enhance_with_voicefixer(
         self,

@@ -31,7 +31,6 @@ class SourceSeparator:
         device: str = "cuda",
         shifts: int = 1,
         overlap: float = 0.25,
-        segment: int = 10,
     ):
         """
         Initialize Demucs source separator.
@@ -41,13 +40,11 @@ class SourceSeparator:
             device: Device for processing (cuda/cpu)
             shifts: Number of random shifts for augmentation
             overlap: Overlap between segments (0.0-1.0)
-            segment: Segment length in seconds
         """
         self.model_name = model_name
         self.device = device
         self.shifts = shifts
         self.overlap = overlap
-        self.segment = segment
         self.model = None
 
     def load_model(self) -> None:
@@ -112,13 +109,13 @@ class SourceSeparator:
 
         try:
             with torch.no_grad():
-                # Apply Demucs separation
+                # Apply Demucs separation with split=True to handle long audio
                 sources = self.apply_model(
                     self.model,
                     audio_tensor,
                     shifts=self.shifts,
                     overlap=self.overlap,
-                    segment=self.segment,
+                    split=True,  # Enable splitting for long audio
                     device=self.device,
                 )
 
@@ -215,5 +212,4 @@ class SourceSeparator:
             "sources": self.model.sources,
             "shifts": self.shifts,
             "overlap": self.overlap,
-            "segment": self.segment,
         }
